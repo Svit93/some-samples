@@ -1,3 +1,5 @@
 A simple sample of code for our FE.
 We use bobril framework similar to React and bobx library (yes, that's really what it's called) for state management (inspired by mobX)
 For some parts of projects we are using hooks.
+
+This is a simple page with modal allowing users to load (acquire) sample content for demo/testing purposes
