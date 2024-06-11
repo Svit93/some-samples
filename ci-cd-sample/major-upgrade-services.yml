@@ -1,0 +1,48 @@
+trigger: none
+pr: none
+
+variables:
+  - group: ADO
+  - group: CloudAdminApiKeys
+
+jobs:
+  - job: "major_upgrade_services"
+    displayName: "Major Upgrade Services"
+    pool: "QuadientUbuntuAgent"
+    
+    steps:
+      - task: UpdateBuildNumber@0
+        inputs:
+          buildNumber: "Major upgrading services on $(environmentName)"
+
+      - task: AzureCLI@2
+        displayName: "Registering connection to AKS"
+        inputs:
+          azureSubscription: '$(azureSubscription)'
+          scriptType: 'bash'
+          scriptLocation: 'inlineScript'
+          inlineScript: 'az aks get-credentials --resource-group $(aksResourceGroup) --name $(aksClusterName) --admin'
+
+      - task: Bash@3
+        displayName: "Port-forwarding traefik"
+        inputs:
+          targetType: 'inline'
+          script: 'kubectl port-forward deployment/traefik-deployment 8000:8000 -n quadient-system &'
+          
+      - task: Gradle@2
+        displayName: "Major Upgrade Services"
+        inputs:
+          gradleWrapperFile: 'gradlew'
+          tasks: 'majorUpgradeServices'
+          publishJUnitResults: true
+          testResultsFiles: '**/TEST-*.xml'
+          testRunTitle: '$(environmentName)-major-upgrade-services-$(Build.BuildId)'
+          javaHomeOption: 'JDKVersion'
+          jdkVersionOption: '1.17'
+          jdkArchitectureOption: 'x64'
+          gradleOptions: '-Xmx3072m'
+          sonarQubeRunAnalysis: false
+        env:
+          CLOUD_ENV: $(CLOUD_ENV)
+          COMPANIES_TO_IGNORE: $(COMPANIES_TO_IGNORE)
+          CLOUD_ADMIN_API_KEY: $(cloudAdministratorApiKey)

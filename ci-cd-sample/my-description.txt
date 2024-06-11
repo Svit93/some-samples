@@ -1,0 +1,4 @@
+A sample of code for task that runs automatically for testing environments to update versions of services (independent apps).
+The reason why we need to do this is too complicated to describe :-D
+There is configured a time scheduler in Azure pipelines which runs pipeline defined by the .yml file.
+The most important part of .yml is that it triggers a gradle task which executes the "test" in kotlin file.
